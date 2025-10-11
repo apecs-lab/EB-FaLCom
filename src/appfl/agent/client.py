@@ -138,9 +138,25 @@ class ClientAgent:
             params, metadata = params
         else:
             metadata = None
+
+        # Record original size before compression
+        original_size = 0
+        for param in params.values():
+            if hasattr(param, 'numel'):
+                original_size += param.numel() * param.element_size()
+            elif isinstance(param, np.ndarray):
+                original_size += param.size * param.itemsize
+        
         if self.enable_compression:
-            params = self.compressor.compress_model(params)
+            params = self.compressor.compress_model(params, client_id=self.get_id())
             # Memory optimization: Garbage collection after compression
+
+            compressed_size = len(params) if isinstance(params, bytes) else 0
+            self.compression_stats = {
+                "original_size": original_size,
+                "compressed_size": compressed_size
+            }
+            print("compression ratio:", original_size / compressed_size if compressed_size > 0 else float('inf'))
             if self.optimize_memory:
                 gc.collect()
 

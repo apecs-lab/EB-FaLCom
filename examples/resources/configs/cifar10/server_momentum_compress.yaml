@@ -4,6 +4,8 @@ client_configs:
     trainer: "VanillaTrainer"
     mode: "epoch"
     num_local_epochs: 1
+    # enable gradient transmission
+    send_gradient: True
     optim: "SGD"
     optim_args:
       lr: 0.1
@@ -36,12 +38,14 @@ client_configs:
   comm_configs:
     compressor_configs:
       enable_compression: True
-      # Used if enable_compression is True
-      lossy_compressor:  "SZ3Compressor"
+      lossy_compressor: "MomentumPredictorCompressor"
       lossless_compressor: "blosc"
-      error_bounding_mode: "REL"
-      error_bound: 1e-3
-      param_cutoff: 1024
+      param_cutoff: 1024  
+      momentum_lr: 0.07  # Learning rate for momentum prediction
+      consistency_threshold: 0.5  # Threshold for sign consistency
+      sz_config:
+        error_bounding_mode: "REL"
+        error_bound: 1e-3
 
 server_configs:
   num_clients: 2
@@ -51,11 +55,11 @@ server_configs:
   aggregator: "FedAvgAggregator"
   aggregator_kwargs:
     client_weights_mode: "equal"
-    expect_gradient: True
+    expect_gradient: True 
   device: "cpu"
-  num_global_epochs: 10
+  num_global_epochs: 10  # More epochs to benefit from temporal prediction
   logging_output_dirname: "./output"
-  logging_output_filename: "result"
+  logging_output_filename: "momentum_compression_result"
   comm_configs:
     grpc_configs:
       server_uri: localhost:50051

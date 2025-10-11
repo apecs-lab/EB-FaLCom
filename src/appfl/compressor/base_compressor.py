@@ -1,5 +1,5 @@
 import abc
-from typing import Union, List
+from typing import Union, List, Optional
 from omegaconf import DictConfig
 from collections import OrderedDict
 
@@ -13,6 +13,7 @@ class BaseCompressor:
         self,
         model: Union[dict, OrderedDict, List[Union[dict, OrderedDict]]],
         batched: bool = False,
+        client_id: Optional[str] = None,
     ) -> bytes:
         """
         Compress all the parameters of local model(s) for efficient communication. The local model can be batched as a list.

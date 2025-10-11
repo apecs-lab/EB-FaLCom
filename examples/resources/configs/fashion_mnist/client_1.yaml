@@ -9,8 +9,8 @@ train_configs:
 
 # Local dataset
 data_configs:
-  dataset_path: "./resources/dataset/cifar10_dataset.py"
-  dataset_name: "get_cifar10"
+  dataset_path: "./resources/dataset/fashion_mnist_dataset.py"
+  dataset_name: "get_fashion_mnist"
   dataset_kwargs:
     num_clients: 2
     client_id: 0

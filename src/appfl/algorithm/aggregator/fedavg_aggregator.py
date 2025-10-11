@@ -38,6 +38,12 @@ class FedAvgAggregator(BaseAggregator):
         # Check for optimize_memory in aggregator_configs, default to True
         self.optimize_memory = getattr(aggregator_configs, "optimize_memory", True)
 
+
+        # Add support for gradient
+        self.expect_gradient = aggregator_configs.get("expect_gradient", False)
+        if self.expect_gradient and self.logger:
+            self.logger.info("FedAvg configured to expect gradients instead of full model parameters")
+
         if self.model is not None:
             self.named_parameters = set()
             for name, _ in self.model.named_parameters():
@@ -212,13 +218,21 @@ class FedAvgAggregator(BaseAggregator):
 
                     for name in model:
                         if name in self.step:
-                            # Safe in-place gradient accumulation
-                            diff = model[name] - self.global_state[name]
-                            weighted_diff = diff * weight
-                            self.step[name] = safe_inplace_operation(
-                                self.step[name], "add", weighted_diff
-                            )
-                            optimize_memory_cleanup(diff, weighted_diff, force_gc=False)
+                            if self.expect_gradient:
+                                # When expecting gradients, the client sends gradients directly
+                                weighted_grad = model[name] * weight
+                                self.step[name] = safe_inplace_operation(
+                                    self.step[name], "sub", weighted_grad
+                                )
+                                optimize_memory_cleanup(weighted_grad, force_gc=False)
+                            else:
+                                # Safe in-place gradient accumulation
+                                diff = model[name] - self.global_state[name]
+                                weighted_diff = diff * weight
+                                self.step[name] = safe_inplace_operation(
+                                    self.step[name], "add", weighted_diff
+                                )
+                                optimize_memory_cleanup(diff, weighted_diff, force_gc=False)
         else:
             # Original behavior
             for name in self.global_state:

@@ -13,7 +13,7 @@ from . import pysz
 from copy import deepcopy
 from omegaconf import DictConfig
 from collections import OrderedDict
-from typing import Tuple, Union, List
+from typing import Tuple, Union, List, Optional
 from .base_compressor import BaseCompressor
 
 
@@ -54,6 +54,7 @@ class SZ3Compressor(BaseCompressor):
         self,
         model: Union[dict, OrderedDict, List[Union[dict, OrderedDict]]],
         batched: bool = False,
+        client_id: Optional[str] = None,
     ) -> bytes:
         """
         Compress all the parameters of local model(s) for efficient communication. The local model can be batched as a list.

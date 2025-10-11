@@ -12,10 +12,10 @@ argparser = argparse.ArgumentParser()
 #     "--server_config", type=str, default="./resources/configs/fashion_mnist/server_fedavg.yaml"
 # )
 argparser.add_argument(
-    "--server_config", type=str, default="./resources/configs/caltech101/server_momentum_compress.yaml"
+    "--server_config", type=str, default="./resources/configs/fashion_mnist/server_momentum_compress.yaml"
 )
 argparser.add_argument(
-    "--client_config", type=str, default="./resources/configs/caltech101/client_1.yaml"
+    "--client_config", type=str, default="./resources/configs/fashion_mnist/client_1.yaml"
 )
 argparser.add_argument("--num_clients", type=int, default=2)
 argparser.add_argument("--error_bound", type=float, default=1e-3)

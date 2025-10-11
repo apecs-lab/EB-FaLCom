@@ -9,12 +9,12 @@ train_configs:
 
 # Local dataset
 data_configs:
-  dataset_path: "./resources/dataset/cifar10_dataset.py"
-  dataset_name: "get_cifar10"
+  dataset_path: "./resources/dataset/caltech101_dataset.py"
+  dataset_name: "get_caltech101"
   dataset_kwargs:
     num_clients: 2
     client_id: 0
-    partition_strategy: "class_noniid"
+    partition_strategy: "iid"
     visualization: True
     output_dirname: "./output"
     output_filename: "visualization.pdf"

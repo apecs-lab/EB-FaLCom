@@ -4,6 +4,7 @@ from .sz3_compressor import SZ3Compressor
 from .szx_compressor import SZxCompressor
 from .zfp_compressor import ZFPCompressor
 from .momentum_predictor_compressor import MomentumPredictorCompressor
+from .qsgd_compressor import QSGDCompressor
 
 __all__ = [
     "Compressor",
@@ -12,4 +13,5 @@ __all__ = [
     "SZxCompressor",
     "ZFPCompressor",
     "MomentumPredictorCompressor",
+    "QSGDCompressor",
 ]

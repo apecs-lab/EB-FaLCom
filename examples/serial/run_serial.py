@@ -12,19 +12,21 @@ argparser = argparse.ArgumentParser()
 #     "--server_config", type=str, default="./resources/configs/fashion_mnist/server_fedavg.yaml"
 # )
 argparser.add_argument(
-    "--server_config", type=str, default="./resources/configs/caltech101/server_momentum_compress.yaml"
+    "--server_config", type=str, default="./resources/configs/caltech101/server_qsgd.yaml"
 )
 argparser.add_argument(
     "--client_config", type=str, default="./resources/configs/caltech101/client_1.yaml"
 )
 argparser.add_argument("--num_clients", type=int, default=2)
-argparser.add_argument("--error_bound", type=float, default=1e-3)
+# argparser.add_argument("--error_bound", type=float, default=1e-3)
+argparser.add_argument("--qsgd_level", type=int, default=2)
 args = argparser.parse_args()
 
 # Load server agent configurations and set the number of clients
 server_agent_config = OmegaConf.load(args.server_config)
 server_agent_config.server_configs.num_clients = args.num_clients
-server_agent_config.client_configs.comm_configs.compressor_configs.sz_config.error_bound = args.error_bound
+# server_agent_config.client_configs.comm_configs.compressor_configs.sz_config.error_bound = args.error_bound
+server_agent_config.client_configs.comm_configs.compressor_configs.qsgd_level = args.qsgd_level
 
 # Create server agent
 server_agent = ServerAgent(server_agent_config=server_agent_config)

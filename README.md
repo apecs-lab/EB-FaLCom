@@ -37,9 +37,9 @@ The result? **Higher compression ratios while preserving training accuracy** in 
 
 ```
 EB-FaLCom/
-├── src/
-│   └── compressor/
-│       └── FalCom.py          # Main compressor implementation
+├── src/appfl/
+│       └── compressor/
+│           └── FalCom.py      # Main compressor implementation
 ├── examples/
 │   └── run_exp.sh             # Runnable FL experiment script
 ├── README.md

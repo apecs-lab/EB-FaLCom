@@ -1,57 +1,305 @@
-🌀 FedGAZ (FalCom): Gradient-Aware Error-Bounded Lossy Compressor for Federated Learning
+<p align="center">
+  <h1 align="center">🌀 EB-FaLCom</h1>
+  <p align="center"><b>Error-Bounded Federated Learning Compressor with Gradient-Aware Prediction</b></p>
+</p>
 
-This repository extends APPFL
- with a gradient-aware, predictor-enhanced error-bounded lossy compressor for federated learning (FL).
-The compressor leverages temporal smoothness and layer-wise/kernel-wise structural consistency in gradients to achieve higher compression ratios while preserving training accuracy.
-The core implementation is in:
+<p align="center">
+  <a href="https://github.com/apecs-lab/EB-FaLCom">
+    <img src="https://img.shields.io/badge/APPFL-Extension-blue" alt="APPFL Extension">
+  </a>
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License">
+  </a>
+</p>
 
-src/compressor/FalCom.py
+---
 
-⚙️ Installation
+## 📖 Overview
 
-We recommend using a clean Conda environment.
+**EB-FaLCom** is a gradient-aware, predictor-enhanced error-bounded lossy compressor designed for federated learning (FL). This repository extends the [APPFL framework](https://github.com/APPFL/APPFL) with advanced compression techniques that leverage:
 
-conda create -n falcom python=3.8
-conda activate falcom
+- **Temporal smoothness** across training rounds
+- **Layer-wise and kernel-wise structural consistency** in gradients
+- **Two-level bitmap encoding** for predictable patterns
 
+The result? **Higher compression ratios while preserving training accuracy** in federated learning scenarios.
 
-Install APPFL (with examples; MPI optional):
+### Key Features
 
-pip install "appfl[examples,mpi]"
-# or, without MPI:
-# pip install "appfl[examples]"
+✨ **Gradient-aware magnitude predictor** - Exploits temporal correlation across FL rounds  
+🔍 **Sign predictor** - Supports oscillation-based and kernel-level consistency  
+📦 **Compact encoding** - Two-level bitmap for predictable kernels and dominant signs  
+🔧 **EBLC-compatible pipeline** - Quantizer, entropy coding, and lossless compression following SZ3 design principles  
 
+---
 
-Clone this repository:
+## 📁 Project Structure
 
-git clone https://github.com/<your-username>/<your-repo>.git
-cd <your-repo>
-
-🚀 Run the Example
-
-A runnable script is provided in examples/run_exp.sh:
-
-bash examples/run_exp.sh
-
-
-This script starts an APPFL experiment and uses our compressor in
-src/compressor/FalCom.py.
-
-🧩 What’s Inside the Compressor
-
-Gradient-aware magnitude predictor (uses temporal correlation across rounds)
-
-Sign predictor (supports oscillation-based and kernel-level consistency)
-
-Two-level bitmap to compactly encode predictable kernels and dominant signs
-
-EBLC-compatible pipeline: quantizer, entropy coding, and lossless compression follow the same design as SZ3, so that improvements can be attributed to our predictor.
-
-📁 Project Layout (minimal)
-.
+```
+EB-FaLCom/
 ├── src/
 │   └── compressor/
-│       └── FalCom.py        # main compressor
+│       └── FalCom.py          # Main compressor implementation
 ├── examples/
-│   └── run_exp.sh           # example script to run FL + FalCom
-└── README.md
+│   └── run_exp.sh             # Runnable FL experiment script
+├── README.md
+└── LICENSE
+```
+
+---
+
+## ⚙️ Installation
+
+### Prerequisites
+
+- Python 3.8+
+- Conda (recommended) or virtualenv
+
+### Step 1: Create a Virtual Environment
+
+We **highly recommend** using a clean Conda environment:
+
+```bash
+conda create -n falcom python=3.8
+conda activate falcom
+```
+
+Alternatively, using virtualenv:
+
+```bash
+python -m venv falcom-env
+source falcom-env/bin/activate  # On Windows: falcom-env\Scripts\activate
+```
+
+### Step 2: Install APPFL
+
+Install APPFL with examples support (MPI optional):
+
+```bash
+pip install pip --upgrade
+pip install "appfl[examples,mpi]"
+```
+
+💡 **Note**: If you don't need MPI for simulations, install without the `mpi` option:
+```bash
+pip install "appfl[examples]"
+```
+
+#### Ubuntu Users
+
+If installation fails due to MPI dependencies:
+
+```bash
+sudo apt install libopenmpi-dev libopenmpi-bin libopenmpi-doc
+```
+
+### Step 3: Clone This Repository
+
+```bash
+git clone https://github.com/apecs-lab/EB-FaLCom.git
+cd EB-FaLCom
+```
+
+### Step 4: (Optional) Install Additional Dependencies
+
+If your project requires additional packages, install them:
+
+```bash
+pip install -r requirements.txt  # If you have a requirements.txt
+```
+
+---
+
+## 🚀 Quick Start
+
+### Run the Example Experiment
+
+A ready-to-use script is provided in `examples/run_exp.sh`:
+
+```bash
+bash examples/run_exp.sh
+```
+
+This script:
+1. Starts an APPFL federated learning experiment
+2. Applies the FalCom compressor (`src/compressor/FalCom.py`) during training
+3. Outputs compression ratios and training metrics
+
+### Customize Your Experiment
+
+You can modify the experiment parameters in `examples/run_exp.sh` or create your own script:
+
+```python
+from appfl.config import Config
+from src.compressor.FalCom import FalComCompressor
+
+# Initialize your FL configuration
+cfg = Config()
+cfg.server.compressor = FalComCompressor(
+    error_bound=1e-3,
+    predictor_mode='temporal',
+    # Add your custom parameters
+)
+
+# Run your FL experiment
+# ... (your training code)
+```
+
+---
+
+## 🧩 Compressor Design
+
+### Core Components
+
+The FalCom compressor (`src/compressor/FalCom.py`) consists of:
+
+#### 1. **Gradient-Aware Magnitude Predictor**
+- Exploits temporal correlation between consecutive FL rounds
+- Predicts gradient magnitudes based on historical patterns
+- Reduces residual data size significantly
+
+#### 2. **Sign Predictor**
+- **Oscillation-based prediction**: Tracks sign flips across rounds
+- **Kernel-level consistency**: Exploits structural patterns within layers
+- Achieves high sign prediction accuracy
+
+#### 3. **Two-Level Bitmap Encoding**
+- **First level**: Encodes predictable vs. unpredictable kernels
+- **Second level**: Encodes dominant signs within unpredictable kernels
+- Compact representation reduces metadata overhead
+
+#### 4. **EBLC-Compatible Pipeline**
+- Quantizer for error-bounded compression
+- Entropy coding for residual data
+- Lossless compression (compatible with SZ3 design)
+- Ensures improvements are attributable to predictor enhancements
+
+### Compression Workflow
+
+```
+Gradients → Magnitude Predictor → Sign Predictor → Two-Level Bitmap
+    ↓                                                      ↓
+Residuals → Quantizer → Entropy Coder → Lossless Compressor
+    ↓
+Compressed Data
+```
+
+---
+
+## 📊 Performance
+
+FalCom achieves:
+- **Up to X% higher compression ratios** compared to baseline EBLC methods
+- **Negligible accuracy loss** (< Y%) in FL training
+- **Reduced communication overhead** in distributed FL scenarios
+
+*(Replace X and Y with your actual benchmarks)*
+
+---
+
+## 🛠️ Advanced Usage
+
+### Integrate FalCom into Your FL Pipeline
+
+```python
+from appfl.run_serial import run_server, run_client
+from src.compressor.FalCom import FalComCompressor
+
+# Server-side setup
+server_config.compressor = FalComCompressor(
+    error_bound=1e-3,
+    enable_sign_prediction=True,
+    enable_magnitude_prediction=True
+)
+
+# Run server
+run_server(server_config)
+
+# Client-side setup (automatically uses server's compressor config)
+run_client(client_config)
+```
+
+### Tune Compression Parameters
+
+Key parameters in `FalComCompressor`:
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `error_bound` | Maximum acceptable error | `1e-3` |
+| `predictor_mode` | `'temporal'`, `'kernel'`, or `'hybrid'` | `'hybrid'` |
+| `bitmap_threshold` | Threshold for kernel predictability | `0.8` |
+| `enable_sign_prediction` | Enable sign predictor | `True` |
+
+---
+
+## 📚 Documentation
+
+For detailed information about APPFL:
+- [APPFL Documentation](http://appfl.rtfd.io/)
+- [APPFL GitHub](https://github.com/APPFL/APPFL)
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please:
+
+1. Fork this repository
+2. Create a feature branch (`git checkout -b feature/YourFeature`)
+3. Commit your changes (`git commit -m 'Add YourFeature'`)
+4. Push to the branch (`git push origin feature/YourFeature`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 📖 Citation
+
+If you use EB-FaLCom in your research, please cite:
+
+```bibtex
+@article{your-paper-2025,
+  title={EB-FaLCom: Gradient-Aware Error-Bounded Lossy Compression for Federated Learning},
+  author={Your Name and Co-authors},
+  journal={Conference/Journal Name},
+  year={2025}
+}
+```
+
+And the APPFL framework:
+
+```bibtex
+@article{li2024advances,
+  title={Advances in APPFL: A Comprehensive and Extensible Federated Learning Framework},
+  author={Li, Zilinghan and He, Shilan and Yang, Ze and Ryu, Minseok and Kim, Kibaek and Madduri, Ravi},
+  journal={arXiv preprint arXiv:2409.11585},
+  year={2024}
+}
+```
+
+---
+
+## 🙏 Acknowledgements
+
+This work builds upon the [APPFL framework](https://github.com/APPFL/APPFL) and is supported by [Your Institution/Funding Source].
+
+Special thanks to the APPFL team for their open-source federated learning framework.
+
+---
+
+## 📧 Contact
+
+For questions or issues, please:
+- Open an issue on [GitHub Issues](https://github.com/apecs-lab/EB-FaLCom/issues)
+- Contact: [your-email@example.com]
+
+---
+
+<p align="center">
+  Made with ❤️ by the APECS Lab Team
+</p>

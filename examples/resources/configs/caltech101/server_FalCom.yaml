@@ -33,12 +33,12 @@ client_configs:
 
   model_configs:
     model_path: "./resources/model/inception_v3.py"
-    model_name: "InceptionV3_FashionMNIST"
+    model_name: "InceptionV3_Caltech101"
 
   comm_configs:
     compressor_configs:
       enable_compression: True
-      lossy_compressor: "MomentumPredictorCompressor"
+      lossy_compressor: "FalCom"
       lossless_compressor: "blosc"
       param_cutoff: 1024  
       momentum_lr: 0.07  # Learning rate for momentum prediction

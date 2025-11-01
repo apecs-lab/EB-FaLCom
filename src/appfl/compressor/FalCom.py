@@ -29,23 +29,14 @@ def _conv_layer_key(shape) -> str:
     return f"conv_{tuple(shape)}"
 
 
-class MomentumPredictorCompressor(BaseCompressor):
-    """
-    Momentum-based predictor compressor for federated learning gradients.
-
-    - 仅当层名含 'weight'、元素数 > param_cutoff、且 dtype 为 float32/64 时，才做有损（SZ3/动量预测）。
-    - 其他一律无损（pickle），避免 int64 等 dtype 触发 SZ3 解压类型错误。
-    - 记录 codec（'sz3' | 'pickle'）与 stored_dtype，解压严格按记录执行。
-    - direct/generic 解压后写入历史，确保动量预测链不断。
-    - zstd 兼容导入；conv key 统一；全局 min/max 预计算以降低开销。
-    """
+class FalCom(BaseCompressor):
 
     def __init__(self, compressor_config: DictConfig):
         super().__init__(compressor_config)
         self.config = compressor_config
 
         # Logging
-        self.logger = logging.getLogger(f"{__name__}.MomentumPredictorCompressor")
+        self.logger = logging.getLogger(f"{__name__}.FalCom")
         if not self.logger.handlers:
 
             file_handler = logging.FileHandler("/eagle/lc-mpi/ZhijingYe/APPFL/examples/momentum_compression/output.log", mode="a")
@@ -64,8 +55,8 @@ class MomentumPredictorCompressor(BaseCompressor):
         
         # 无损压缩器选择 (zstd, blosc, pickle)
         self.lossless_compressor = getattr(compressor_config, 'lossless_compressor', 'zstd')
-        
-        # self.logger.info(f"Initializing MomentumPredictorCompressor with momentum_lr={self.momentum_lr}, "
+
+        # self.logger.info(f"Initializing FalCom with momentum_lr={self.momentum_lr}, "
         #                  f"consistency_threshold={self.consistency_threshold}, "
         #                  f"lossless_compressor={self.lossless_compressor}")
 
@@ -147,7 +138,6 @@ class MomentumPredictorCompressor(BaseCompressor):
             return pickle.loads(compressed_data)
 
     def _should_lossy(self, layer_name: str, arr: np.ndarray) -> bool:
-        """判断是否应该进行有损压缩"""
         return ("weight" in layer_name) and \
                (arr.size > self.param_count_threshold) and \
                (arr.dtype in FLOAT_DTYPES)
@@ -174,11 +164,6 @@ class MomentumPredictorCompressor(BaseCompressor):
                 eb_rel=rel_bound,
                 eb_pwr=0,
             )
-
-            # 获取调用者信息
-            # caller = sys._getframe(1).f_code.co_name
-            # self.logger.info(f"SZ3压缩 - 调用点:{caller}, 形状:{data.shape}, "
-            #                f"数据类型:{data.dtype}, 压缩率:{cmp_ratio:.4f}x")
 
             return compressed_arr.tobytes(), cmp_ratio
         except Exception as e:
@@ -551,7 +536,6 @@ class MomentumPredictorCompressor(BaseCompressor):
 
         for layer_name, layer_params in model_params.items():
             if isinstance(layer_params, torch.Tensor) and layer_params.ndim == 4 and self._should_lossy(layer_name, layer_params.detach().cpu().numpy()):
-                # conv 大 weight → 动量预测
                 compressed_layer = self._create_compressed_data(layer_params, client_id, layer_name)
                 compressed_layers[layer_name] = compressed_layer
                 if "prediction_ratio" in compressed_layer:
@@ -561,7 +545,6 @@ class MomentumPredictorCompressor(BaseCompressor):
                     total_sign_mismatch_ratio += compressed_layer["sign_mismatch_ratio"]
 
             elif isinstance(layer_params, torch.Tensor):
-                # 非 4D 或不满足 lossy 条件 → direct_generic（内部再按 should_lossy 决定 SZ3/或pickle，通常为 pickle）
                 compressed_layer = self._compress_generic_layer(
                     layer_params.detach().cpu().numpy(), client_id, current_step=1, layer_name=layer_name
                 )
@@ -600,15 +583,12 @@ class MomentumPredictorCompressor(BaseCompressor):
         if batched:
             raise NotImplementedError("Batched decompression not yet implemented")
 
-        # 首先尝试判断是否是新格式的压缩数据
         try:
-            # 尝试用lossless_decompress解压（新格式）
             compressed_data = self._lossless_decompress(compressed_model, 'zstd')
         except:
             try:
                 compressed_data = self._lossless_decompress(compressed_model, 'blosc') 
             except:
-                # 回退到pickle（旧格式）
                 compressed_data = pickle.loads(compressed_model)
         compressed_layers = compressed_data["compressed_layers"]
         metadata = compressed_data["metadata"]
@@ -636,7 +616,6 @@ class MomentumPredictorCompressor(BaseCompressor):
                         if shape is not None:
                             tensor = torch.as_tensor(arr)
                         else:
-                            # 非 tensor 数据，直接返回
                             decompressed_model[layer_name] = arr
                             continue
                     else:
@@ -646,7 +625,6 @@ class MomentumPredictorCompressor(BaseCompressor):
                         arr = self._decompress_with_sz3(compressed_layer["data"], tuple(shape), stored_dtype)
                         tensor = torch.from_numpy(arr)
 
-                    # 写历史，保持后续动量预测一致
                     if client_id not in self.gradient_history:
                         self.gradient_history[client_id] = {}
                     if layer_name not in self.gradient_history[client_id]:
@@ -787,7 +765,6 @@ class MomentumPredictorCompressor(BaseCompressor):
     # -------------------- misc controls & stats --------------------
     def set_client_context(self, client_id: str):
         self._current_client_id = client_id
-        # 确保使用固定格式的客户端ID
         if not client_id.startswith("Client"):
             client_parts = client_id.split("_")
             if len(client_parts) > 1 and client_parts[-1].isdigit():

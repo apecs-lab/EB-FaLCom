@@ -100,16 +100,6 @@ git clone https://github.com/apecs-lab/EB-FaLCom.git
 cd EB-FaLCom
 ```
 
-### Step 4: (Optional) Install Additional Dependencies
-
-If your project requires additional packages, install them:
-
-```bash
-pip install -r requirements.txt  # If you have a requirements.txt
-```
-
----
-
 ## 🚀 Quick Start
 
 ### Run the Example Experiment

@@ -1,5 +1,5 @@
 <p align="center">
-  <h1 align="center">🌀 EB-FaLCom</h1>
+  <h1 align="center">EB-FaLCom</h1>
   <p align="center"><b>Error-Bounded Federated Learning Compressor with Gradient-Aware Prediction</b></p>
 </p>
 

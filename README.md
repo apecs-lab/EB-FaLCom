@@ -125,27 +125,6 @@ This script:
 2. Applies the FalCom compressor (`src/compressor/FalCom.py`) during training
 3. Outputs compression ratios and training metrics
 
-### Customize Your Experiment
-
-You can modify the experiment parameters in `examples/run_exp.sh` or create your own script:
-
-```python
-from appfl.config import Config
-from src.compressor.FalCom import FalComCompressor
-
-# Initialize your FL configuration
-cfg = Config()
-cfg.server.compressor = FalComCompressor(
-    error_bound=1e-3,
-    predictor_mode='temporal',
-    # Add your custom parameters
-)
-
-# Run your FL experiment
-# ... (your training code)
-```
-
----
 
 ## 🧩 Compressor Design
 
@@ -189,48 +168,11 @@ Compressed Data
 ## 📊 Performance
 
 FalCom achieves:
-- **Up to X% higher compression ratios** compared to baseline EBLC methods
-- **Negligible accuracy loss** (< Y%) in FL training
+- **Up to 53% higher compression ratios** compared to baseline EBLC methods
+- **Negligible accuracy loss** in FL training
 - **Reduced communication overhead** in distributed FL scenarios
 
-*(Replace X and Y with your actual benchmarks)*
 
----
-
-## 🛠️ Advanced Usage
-
-### Integrate FalCom into Your FL Pipeline
-
-```python
-from appfl.run_serial import run_server, run_client
-from src.compressor.FalCom import FalComCompressor
-
-# Server-side setup
-server_config.compressor = FalComCompressor(
-    error_bound=1e-3,
-    enable_sign_prediction=True,
-    enable_magnitude_prediction=True
-)
-
-# Run server
-run_server(server_config)
-
-# Client-side setup (automatically uses server's compressor config)
-run_client(client_config)
-```
-
-### Tune Compression Parameters
-
-Key parameters in `FalComCompressor`:
-
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `error_bound` | Maximum acceptable error | `1e-3` |
-| `predictor_mode` | `'temporal'`, `'kernel'`, or `'hybrid'` | `'hybrid'` |
-| `bitmap_threshold` | Threshold for kernel predictability | `0.8` |
-| `enable_sign_prediction` | Enable sign predictor | `True` |
-
----
 
 ## 📚 Documentation
 
@@ -238,67 +180,6 @@ For detailed information about APPFL:
 - [APPFL Documentation](http://appfl.rtfd.io/)
 - [APPFL GitHub](https://github.com/APPFL/APPFL)
 
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please:
-
-1. Fork this repository
-2. Create a feature branch (`git checkout -b feature/YourFeature`)
-3. Commit your changes (`git commit -m 'Add YourFeature'`)
-4. Push to the branch (`git push origin feature/YourFeature`)
-5. Open a Pull Request
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 📖 Citation
-
-If you use EB-FaLCom in your research, please cite:
-
-```bibtex
-@article{your-paper-2025,
-  title={EB-FaLCom: Gradient-Aware Error-Bounded Lossy Compression for Federated Learning},
-  author={Your Name and Co-authors},
-  journal={Conference/Journal Name},
-  year={2025}
-}
-```
-
-And the APPFL framework:
-
-```bibtex
-@article{li2024advances,
-  title={Advances in APPFL: A Comprehensive and Extensible Federated Learning Framework},
-  author={Li, Zilinghan and He, Shilan and Yang, Ze and Ryu, Minseok and Kim, Kibaek and Madduri, Ravi},
-  journal={arXiv preprint arXiv:2409.11585},
-  year={2024}
-}
-```
-
----
-
-## 🙏 Acknowledgements
-
-This work builds upon the [APPFL framework](https://github.com/APPFL/APPFL) and is supported by [Your Institution/Funding Source].
-
-Special thanks to the APPFL team for their open-source federated learning framework.
-
----
-
-## 📧 Contact
-
-For questions or issues, please:
-- Open an issue on [GitHub Issues](https://github.com/apecs-lab/EB-FaLCom/issues)
-- Contact: [your-email@example.com]
-
----
 
 <p align="center">
   Made with ❤️ by the APECS Lab Team

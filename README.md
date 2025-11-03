@@ -57,7 +57,7 @@ EB-FaLCom/
 
 ### Prerequisites
 
-- Python 3.8+
+- Python 3.10+
 - Conda (recommended) or virtualenv
 
 ### Step 1: Create a Virtual Environment

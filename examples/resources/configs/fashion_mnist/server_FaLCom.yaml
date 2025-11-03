@@ -38,7 +38,7 @@ client_configs:
   comm_configs:
     compressor_configs:
       enable_compression: True
-      lossy_compressor: "FalCom"
+      lossy_compressor: "FaLCom"
       lossless_compressor: "blosc"
       param_cutoff: 1024  
       momentum_lr: 0.07  # Learning rate for momentum prediction

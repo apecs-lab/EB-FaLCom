@@ -32,13 +32,13 @@ client_configs:
     val_data_shuffle: False
 
   model_configs:
-    model_path: "./resources/model/inception_v3.py"
-    model_name: "InceptionV3_Caltech101"
+    model_path: "./resources/model/resnet.py"
+    model_name: "ResNet18"
 
   comm_configs:
     compressor_configs:
       enable_compression: True
-      lossy_compressor: "FalCom"
+      lossy_compressor: "FaLCom"
       lossless_compressor: "blosc"
       param_cutoff: 1024  
       momentum_lr: 0.07  # Learning rate for momentum prediction
@@ -59,7 +59,7 @@ server_configs:
   device: "cpu"
   num_global_epochs: 10  # More epochs to benefit from temporal prediction
   logging_output_dirname: "./output"
-  logging_output_filename: "momentum_compression_result"
+  logging_output_filename: "FaLCom_compression_result"
   comm_configs:
     grpc_configs:
       server_uri: localhost:50051
